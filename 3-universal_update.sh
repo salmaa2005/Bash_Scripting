@@ -59,6 +59,48 @@ if grep -q "Mint" $release_file; then
   fi
 fi
 
+if grep -q "Ubuntu" $release_file || grep -q "Debian" $release_file; then
+  sudo apt update 1>>$logfile 2>>$errorlog
+  sudo apt dist-upgrade -y 1>>&logfile 2>>$errorlog
+  if [ $? -ne 0 ]; then
+    echo "Error: update failed, please check $errorlog file"
+  fi
+fi
+
 # we can use the command "tail -f" to view the logs in almost real time
 # tail -f /var/log/updater.log
 # tail -f /var/log/updater_errors.log
+# ____________________________________________________________________________
+
+# an enhanced version using functions in Bash:
+
+release_file=/etc/os-release
+logfile=/var/log/updater.log
+errorlog=/var/log/updater_errors.log
+
+check_status()
+{
+  if [ $? -ne 0 ]
+  then
+    echo "Error: update failed, please check $errorlog file"
+  fi
+}
+
+if grep -q "Arch" $release_file; then
+  sudo pacman -Syu 1>>$logfile 2>>$errorlog
+  check_status
+fi
+
+if grep -q "Mint" $release_file; then
+  sudo apt update 1>>$logfile 2>>$errorlog
+  sudo apt dist-upgrade -y 1>>&logfile 2>>$errorlog
+  check_status
+fi
+
+if grep -q "Ubuntu" $release_file || grep -q "Debian" $release_file; then
+  sudo apt update 1>>$logfile 2>>$errorlog
+  sudo apt dist-upgrade -y 1>>&logfile 2>>$errorlog
+  check_status
+fi
+
+# ____________________________________________________________________________
