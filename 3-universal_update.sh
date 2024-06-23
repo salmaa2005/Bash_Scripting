@@ -35,3 +35,30 @@ if grep -q "Mint" $release_file; then
 fi
 
 #the prblem here is that we have to search for each distro name specifically in the release file
+
+#____________________________________________________________________________
+
+release_file=/etc/os-release
+logfile=/var/log/updater.log
+errorlog=/var/log/updater_errors.log
+
+if grep -q "Arch" $release_file; then
+  sudo pacman -Syu 1>>$logfile 2>>$errorlog
+  if [ $? -ne 0 ]; then
+    echo "Error: update failed, please check $errorlog file"
+  fi
+fi
+
+if grep -q "Mint" $release_file; then
+  sudo apt update 1>>$logfile 2>>$errorlog
+  sudo apt dist-upgrade -y 1>>&logfile 2>>$errorlog
+  # here we added -y because we won't be seeing any output as it's redirected
+  # so we won't even know if it asks for any permission
+  if [ $? -ne 0 ]; then
+    echo "Error: update failed, please check $errorlog file"
+  fi
+fi
+
+# we can use the command "tail -f" to view the logs in almost real time
+# tail -f /var/log/updater.log
+# tail -f /var/log/updater_errors.log
